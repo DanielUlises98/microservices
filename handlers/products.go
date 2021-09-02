@@ -5,18 +5,38 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/DanielUlises98/microservices/data"
+	"github.com/gorilla/mux"
 )
 
 type Products struct {
 	l *log.Logger
+}
+type GenericError struct {
+	Message string `json:"message"`
+}
+type ValidationError struct {
+	Message string `json:"message"`
 }
 
 func NewProducts(l *log.Logger) *Products {
 	return &Products{l}
 }
 
+var ErrInvalidProductPath = fmt.Errorf("Invalid path, path should be /products/[id]")
+
+func getProductID(r *http.Request) int {
+	vars := mux.Vars(r)
+
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		panic(err)
+	}
+	return id
+
+}
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	lp := data.GetProducts()
 	err := lp.ToJSON(rw)

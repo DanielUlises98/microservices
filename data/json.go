@@ -5,12 +5,12 @@ import (
 	"io"
 )
 
-func (p *Products) ToJSON(i interface{}, w io.Writer) error {
+func ToJSON(i interface{}, w io.Writer) error {
 	e := json.NewEncoder(w)
 	return e.Encode(i)
 }
 
-func (p *Product) FromJson(i interface{}, r io.Reader) error {
+func FromJson(i interface{}, r io.Reader) error {
 	e := json.NewDecoder(r)
 	return e.Decode(i)
 }

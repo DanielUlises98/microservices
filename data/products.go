@@ -33,6 +33,13 @@ type Products []*Product
 func GetProducts() Products {
 	return productList
 }
+func GetProductByID(id int) (*Product, error) {
+	i := findIndexByProductId(id)
+	if id == -1 {
+		return nil, ErrProductNotFound
+	}
+	return productList[i], nil
+}
 func UpdateProduct(p Product) error {
 	ind := findIndexByProductId(p.ID)
 	if ind == -1 {
