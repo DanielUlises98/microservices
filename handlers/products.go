@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,16 +12,17 @@ import (
 
 type Products struct {
 	l *log.Logger
+	v *data.Validation
 }
 type GenericError struct {
 	Message string `json:"message"`
 }
 type ValidationError struct {
-	Message string `json:"message"`
+	Messages []string `json:"messages"`
 }
 
-func NewProducts(l *log.Logger) *Products {
-	return &Products{l}
+func NewProducts(l *log.Logger, v *data.Validation) *Products {
+	return &Products{l, v}
 }
 
 var ErrInvalidProductPath = fmt.Errorf("Invalid path, path should be /products/[id]")
@@ -51,33 +51,4 @@ func (p Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 	data.AddProduct(prod)
 }
 
-
 type KeyProduct struct{}
-
-func (p Products) MiddleWareProductValidation(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		prod := data.Product{}
-
-		err := prod.FromJson(r.Body)
-		if err != nil {
-			http.Error(rw, "post Unable to marshal json", http.StatusBadRequest)
-			return
-		}
-
-		//validate the product
-
-		err = prod.Validate()
-		if err != nil {
-			p.l.Println("Error", err)
-			http.Error(
-				rw,
-				fmt.Sprintf("Error validating product: %s", err),
-				http.StatusBadRequest)
-			return
-		}
-		ctx := context.WithValue(r.Context(), KeyProduct{}, prod)
-		r = r.WithContext(ctx)
-
-		next.ServeHTTP(rw, r)
-	})
-}
